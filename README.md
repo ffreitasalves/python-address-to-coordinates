@@ -13,8 +13,8 @@ Simple Usage
     >>> print test['lng']
     -73.95924
 
-Creating an Excel file based in another excel file
-==================================================
+Coordinates for each row in an excel file
+=========================================
 
     #The third argument of this function is the column that contains the address.
     #It wil read the input.xlsx file, read the 'Plan1' sheet, looking for coordinates to addresses('0' column)
