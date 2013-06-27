@@ -22,4 +22,8 @@ Coordinates for each row in an excel file
     from script import xlsx_coordinates
     xlsx_coordinates('input.xlsx','Plan1',0,'output.xlsx')
 
+Create a kml file from a xlsx
+==============================
 
+    from script import create_kml
+    create_kml('input.xlsx','sheet_name','output.kml')
