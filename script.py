@@ -47,3 +47,25 @@ def xlsx_coordinates(input_file, sheet_name,address_column, output_file, ignore_
         sheet.append(row)
 
     wb_write.save(output_file)
+
+def create_kml(input_file,sheet_name,output_file,lat_column = 0,lng_column = 1):
+
+    kml = simplekml.Kml()
+    wb_read = load_workbook(input_file)
+    sh = wb_read.get_sheet_by_name(sheet_name)
+
+    properties = []
+    for c in sh.rows[0]:
+        properties.append(c.value.encode('utf-8'))
+
+    for p,row in enumerate(sh.rows[1:]):
+        for k,c in enumerate(row):
+            if k==0:
+                coord_tuple = (row[lng_column].value,row[lat_column].value)
+                pnt = kml.newpoint(name = 'Point %s' % p, coords =[coord_tuple])
+#            TODO: It's not working with unicode and utf-8
+#            if k != lat_column and k != lng_column:
+#                if type(row[k].value) == unicode or type(row[k].value) == str:
+#                    pnt.extendeddata.newdata(properties[k],row[k].value.encode())
+
+    kml.save(output_file)
