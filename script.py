@@ -1,11 +1,22 @@
-import urllib
-import simplejson
+import requests
+from openpyxl import load_workbook, Workbook
 
-def coordinates(address):
-    url = 'http://maps.google.com/maps/api/geocode/json?address=%s&sensor=false' % address
-    coord = simplejson.load(
-        urllib.urlopen(url)
-    )
+def coordinates(address, api_key = None):
+    url = 'https://maps.googleapis.com/maps/api/geocode/json'
+
+    params = {
+        'address' : address.encode('ascii', 'xmlcharrefreplace'),
+        'sensor' : 'false'
+    }
+
+    if api_key:
+        params['key'] = api_key
+
+    response = requests.get(url, params=params)
+    coord = response.json()
+
+    if coord['status'] == 'OVER_QUERY_LIMIT':
+        raise RuntimeError(coord['error_message'])
 
     if coord['status'] == 'OK':
         return {
@@ -18,12 +29,12 @@ def coordinates(address):
             'lng': '',
             }
 
-def xlsx_coordinates(input_file, sheet_name,address_column, output_file, ignore_first_row = True):
+def xlsx_coordinates(input_file, sheet_name, address_column, output_file, ignore_first_row = True, api_key = None):
     """
     Read the xlsx input_file, and add two new columns in the beginning of it with latitude and longitude
     Input file must be a xls* file
     """
-
+    
     wb_read = load_workbook(input_file)
     sh = wb_read.get_sheet_by_name(sheet_name)
     if ignore_first_row:
@@ -34,14 +45,14 @@ def xlsx_coordinates(input_file, sheet_name,address_column, output_file, ignore_
 
     out = []
     for row in sh.rows[first:]:
-        coord = coordinates(row[address_column].value)
+        coord = coordinates(row[address_column].value, api_key)
         new_row = [coord['lat'],coord['lng']]
         for c in row:
             new_row.append(c.value)
         out.append(new_row)
 
     wb_write = Workbook(optimized_write=True)
-    sheet = wb_write.create_sheet(0,sheet_name)
+    sheet = wb_write.create_sheet(sheet_name,0)
 
     for row in out:
         sheet.append(row)
